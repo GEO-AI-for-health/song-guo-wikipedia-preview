@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Song Guo — independent Wikipedia-style draft preview</title>
+  <style>
+    :root {
+      --text: #202122;
+      --muted: #54595d;
+      --border: #a2a9b1;
+      --soft-border: #c8ccd1;
+      --link: #3366cc;
+      --visited: #795cb2;
+      --paper: #ffffff;
+      --panel: #f8f9fa;
+      --notice: #fff7d6;
+      --notice-border: #c8a500;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--paper);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    a { color: var(--link); text-decoration: none; }
+    a:visited { color: var(--visited); }
+    a:hover { text-decoration: underline; }
+
+    .draft-banner {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--notice-border);
+      background: var(--notice);
+      color: #4b3d00;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 650;
+      letter-spacing: .01em;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 180px minmax(0, 1040px);
+      gap: 28px;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 22px 28px 48px;
+    }
+
+    .sidebar {
+      padding-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .wordmark {
+      margin-bottom: 25px;
+      color: #111;
+      font-family: Georgia, "Times New Roman", serif;
+      text-align: center;
+    }
+
+    .wordmark .globe {
+      display: grid;
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 7px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      place-items: center;
+      background: linear-gradient(145deg, #fff, #eaecf0);
+      font-size: 27px;
+    }
+
+    .wordmark strong { display: block; font-size: 17px; font-weight: 500; }
+    .wordmark span { font-family: sans-serif; font-size: 9px; letter-spacing: .12em; }
+
+    .side-heading {
+      margin: 16px 0 5px;
+      padding-bottom: 3px;
+      border-bottom: 1px solid #eaecf0;
+      color: #72777d;
+      font-size: 11px;
+    }
+
+    .sidebar a { display: block; padding: 2px 0; }
+
+    main { min-width: 0; }
+
+    .page-tools {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--soft-border);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .tabs { display: flex; gap: 18px; }
+    .tab { padding: 8px 1px 7px; }
+    .tab.active { border-bottom: 2px solid var(--text); color: var(--text); }
+
+    h1, h2, h3 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 400;
+    }
+
+    h1 {
+      margin: 14px 0 2px;
+      border-bottom: 1px solid var(--border);
+      font-size: 30px;
+      line-height: 1.25;
+    }
+
+    .subtitle {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    h2 {
+      clear: left;
+      margin: 27px 0 8px;
+      border-bottom: 1px solid var(--border);
+      font-size: 22px;
+      line-height: 1.35;
+    }
+
+    h3 {
+      margin: 20px 0 6px;
+      font-size: 17px;
+      line-height: 1.35;
+    }
+
+    p { margin: 8px 0 12px; }
+
+    .infobox {
+      float: right;
+      width: 310px;
+      margin: 0 0 18px 24px;
+      border: 1px solid var(--border);
+      border-spacing: 3px;
+      background: var(--panel);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .infobox caption {
+      padding: 9px 8px;
+      background: #eaecf0;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .infobox th {
+      width: 88px;
+      padding: 5px 7px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .infobox td { padding: 5px 7px; vertical-align: top; }
+    .native-name { font-size: 16px; font-weight: 500; }
+
+    .portrait-cell {
+      padding: 0 !important;
+      background: #fff;
+      text-align: center;
+    }
+
+    .portrait {
+      display: block;
+      width: 100%;
+      max-height: 310px;
+      object-fit: cover;
+      object-position: center 20%;
+    }
+
+    .portrait-caption {
+      padding: 5px 8px 7px;
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .toc {
+      width: 245px;
+      margin: 18px 0 20px;
+      border: 1px solid var(--soft-border);
+      background: var(--panel);
+      font-size: 13px;
+    }
+
+    .toc-title {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--soft-border);
+      font-weight: 700;
+    }
+
+    .toc ol { margin: 7px 0 9px 31px; padding: 0; }
+    .toc li { padding: 1px 7px 1px 1px; }
+
+    .award-list { padding-left: 25px; }
+    .award-list li { margin: 5px 0; }
+    .compact li { margin: 3px 0; }
+
+    .data-table {
+      width: min(100%, 700px);
+      margin: 12px 0 17px;
+      border: 1px solid var(--border);
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 6px 9px;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+
+    .data-table th { background: #eaecf0; }
+
+    .editor-note {
+      padding: 8px 10px;
+      border-left: 3px solid var(--notice-border);
+      background: #fffaf0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    sup.reference {
+      margin-left: 1px;
+      font-size: 10px;
+      line-height: 1;
+      vertical-align: super;
+      white-space: nowrap;
+    }
+
+    .references {
+      columns: 2 360px;
+      column-gap: 34px;
+      padding-left: 24px;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .references li {
+      margin: 0 0 8px;
+      padding-left: 2px;
+      break-inside: avoid;
+      overflow-wrap: anywhere;
+    }
+
+    .external-links { padding-left: 24px; }
+
+    .categories {
+      clear: both;
+      margin-top: 28px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      font-size: 12px;
+    }
+
+    .categories a:not(:last-child)::after {
+      content: " | ";
+      color: var(--muted);
+    }
+
+    .footer {
+      margin-top: 26px;
+      padding-top: 12px;
+      border-top: 1px solid #eaecf0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    @media (max-width: 850px) {
+      .shell { display: block; padding: 16px 18px 40px; }
+      .sidebar { display: none; }
+      .infobox { width: 300px; }
+    }
+
+    @media (max-width: 600px) {
+      .draft-banner { position: static; }
+      .page-tools .right-tabs { display: none; }
+      .infobox { float: none; width: 100%; margin: 14px 0 18px; }
+      .toc { width: 100%; }
+      .references { columns: 1; }
+      h1 { font-size: 27px; }
+    }
+
+    @media print {
+      .draft-banner { position: static; }
+      .sidebar, .page-tools { display: none; }
+      .shell { display: block; max-width: none; padding: 0; }
+      a { color: inherit; }
+    }
+  </style>
+</head>
+<body>
+  <div class="draft-banner">INDEPENDENT DRAFT PREVIEW · NOT PUBLISHED TO WIKIPEDIA</div>
+
+  <div class="shell">
+    <aside class="sidebar" aria-label="Preview navigation">
+      <div class="wordmark">
+        <div class="globe" aria-hidden="true">W</div>
+        <strong>Wikipedia</strong>
+        <span>THE FREE ENCYCLOPEDIA</span>
+      </div>
+      <div class="side-heading">Contents</div>
+      <a href="#biography">Biography</a>
+      <a href="#research">Research</a>
+      <a href="#achievements">Achievements</a>
+      <a href="#grants">Grants</a>
+      <a href="#professional-service">Professional service</a>
+      <a href="#honors">Honors and awards</a>
+      <a href="#references">References</a>
+      <a href="#external-links">External links</a>
+      <div class="side-heading">Status</div>
+      <span>Public review copy</span>
+      <span>Source-audited draft</span>
+    </aside>
+
+    <main>
+      <nav class="page-tools" aria-label="Page tools">
+        <div class="tabs">
+          <span class="tab active">Article</span>
+          <span class="tab">Talk</span>
+        </div>
+        <div class="tabs right-tabs">
+          <span class="tab active">Read</span>
+          <span class="tab">View source</span>
+          <span class="tab">View history</span>
+        </div>
+      </nav>
+
+      <h1>Song Guo</h1>
+      <p class="subtitle">Independent Wikipedia-style draft preview</p>
+
+      <table class="infobox" aria-label="Scientist infobox">
+        <caption>Song Guo</caption>
+        <tr><td colspan="2" class="portrait-cell"><img class="portrait" src="Song_Guo_portrait.png" alt="Portrait of Song Guo"><div class="portrait-caption">Song Guo</div></td></tr>
+        <tr><th>Native name</th><td class="native-name" lang="zh-Hant">郭嵩</td></tr>
+        <tr><th>Fields</th><td><a href="https://en.wikipedia.org/wiki/Edge_computing">Edge computing</a>, <a href="https://en.wikipedia.org/wiki/Distributed_computing">distributed computing</a>, <a href="https://en.wikipedia.org/wiki/Machine_learning">machine learning</a>, <a href="https://en.wikipedia.org/wiki/Cloud_computing">cloud computing</a></td></tr>
+        <tr><th>Institutions</th><td>Hong Kong University of Science and Technology; Hong Kong Polytechnic University; University of Aizu; University of Northern British Columbia</td></tr>
+        <tr><th>Alma mater</th><td>Huazhong University of Science and Technology (BE); Beijing University of Posts and Telecommunications (ME); University of Ottawa (PhD)</td></tr>
+        <tr><th>Awards</th><td>Elected Fellow of the Royal Society of Canada (2026); CCF Award for Overseas Outstanding Contributions (2026); Clarivate Highly Cited Researcher (2020–2026); IEEE Edward J. McCluskey Technical Achievement Award (2024); Member of Academia Europaea (2022); Fellow of the Canadian Academy of Engineering (2021); IEEE Fellow (2020); Changjiang Chair Professor (2019)</td></tr>
+      </table>
+
+      <p><b>Song Guo</b> (<a href="https://en.wikipedia.org/wiki/Traditional_Chinese_characters">Chinese</a>: <span lang="zh-Hant">郭嵩</span>) is a computer scientist known for his work on edge computing and <a href="https://en.wikipedia.org/wiki/Edge_computing#Edge_artificial_intelligence">edge artificial intelligence</a>, distributed systems, machine-learning systems, and physical AI. He is a chair professor and associate head for research and knowledge transfer in the Department of Computer Science and Engineering at the <a href="https://en.wikipedia.org/wiki/Hong_Kong_University_of_Science_and_Technology">Hong Kong University of Science and Technology</a> (HKUST).<sup class="reference"><a href="#ref-1">[1]</a></sup> In 2024, the IEEE Computer Society recognized his “pioneering contributions to edge computing and edge intelligence technologies” with the Edward J. McCluskey Technical Achievement Award.<sup class="reference"><a href="#ref-2">[2]</a></sup> In 2026, he was elected to the Academy of Science of the <a href="https://en.wikipedia.org/wiki/Royal_Society_of_Canada">Royal Society of Canada</a> and received the CCF Award for Overseas Outstanding Contributions.<sup class="reference"><a href="#ref-3">[3]</a></sup><sup class="reference"><a href="#ref-4">[4]</a></sup><sup class="reference"><a href="#ref-5">[5]</a></sup></p>
+
+      <div class="toc">
+        <div class="toc-title">Contents</div>
+        <ol>
+          <li><a href="#biography">Biography</a></li>
+          <li><a href="#research">Research</a></li>
+          <li><a href="#achievements">Achievements</a></li>
+          <li><a href="#grants">Grants</a></li>
+          <li><a href="#professional-service">Professional service</a></li>
+          <li><a href="#honors">Honors and awards</a></li>
+          <li><a href="#references">References</a></li>
+          <li><a href="#external-links">External links</a></li>
+        </ol>
+      </div>
+
+      <section id="biography">
+        <h2>Biography</h2>
+        <p>Guo received a bachelor's degree in computer engineering from the <a href="https://en.wikipedia.org/wiki/Huazhong_University_of_Science_and_Technology">Huazhong University of Science and Technology</a> in 1995 and a master's degree in computer engineering from the <a href="https://en.wikipedia.org/wiki/Beijing_University_of_Posts_and_Telecommunications">Beijing University of Posts and Telecommunications</a> in 1998. He completed a PhD in computer science at the <a href="https://en.wikipedia.org/wiki/University_of_Ottawa">University of Ottawa</a>.<sup class="reference"><a href="#ref-6">[6]</a></sup></p>
+        <p>After a postdoctoral fellowship at the <a href="https://en.wikipedia.org/wiki/University_of_British_Columbia">University of British Columbia</a> in 2006, he was an assistant professor at the <a href="https://en.wikipedia.org/wiki/University_of_Northern_British_Columbia">University of Northern British Columbia</a> from 2006 to 2007. He joined the <a href="https://en.wikipedia.org/wiki/University_of_Aizu">University of Aizu</a> in 2007, becoming a full professor there in 2014. From 2016 to 2023, he was a professor at the <a href="https://en.wikipedia.org/wiki/Hong_Kong_Polytechnic_University">Hong Kong Polytechnic University</a>, where he directed the Edge Intelligence Lab.<sup class="reference"><a href="#ref-6">[6]</a></sup><sup class="reference"><a href="#ref-7">[7]</a></sup> In 2019, he received a Changjiang Chair Professorship (<span lang="zh-Hant">長江學者講座教授</span>) from China's Ministry of Education.<sup class="reference"><a href="#ref-8">[8]</a></sup> He joined HKUST in 2023. In addition to his departmental roles, HKUST lists him as director of its Center of Physical AI and program director of its MSc in Artificial Intelligence.<sup class="reference"><a href="#ref-9">[9]</a></sup></p>
+      </section>
+
+      <section id="research">
+        <h2>Research</h2>
+        <p>Guo's research spans distributed and cloud computing, mobile computing, edge computing, and machine-learning systems.<sup class="reference"><a href="#ref-1">[1]</a></sup><sup class="reference"><a href="#ref-9">[9]</a></sup> His work on edge intelligence has examined how model training and inference can be moved from centralized cloud infrastructure toward edge servers and end devices. The IEEE Computer Society has described his contributions as including the development of edge learning, a machine-learning paradigm for training and inference at the network edge.<sup class="reference"><a href="#ref-15">[15]</a></sup></p>
+        <p>In the edge-learning model described by Guo, data generated by mobile and Internet-of-things devices can be used for local or collaborative model training, while inference is performed closer to the point of data collection. The approach is intended to reduce reliance on centralized processing, lower communication latency, and improve privacy and real-time responsiveness.<sup class="reference"><a href="#ref-15">[15]</a></sup></p>
+        <p>His later research has expanded to large language models, world models, embodied AI, and physical AI. At HKUST, he directs the Pervasive Intelligence Laboratory, which develops architectures, algorithms, and systems for robotic agents, world models, embodied AI, and foundation models.<sup class="reference"><a href="#ref-16">[16]</a></sup> His work on edge-native foundation-model services investigates the use of distributed and heterogeneous edge resources to provide lower-latency, privacy-preserving access to foundation models.<sup class="reference"><a href="#ref-17">[17]</a></sup></p>
+      </section>
+
+      <section id="achievements">
+        <h2>Achievements</h2>
+        <p>Guo was named a <a href="https://en.wikipedia.org/wiki/Clarivate#Highly_Cited_Researchers">Clarivate Highly Cited Researcher</a> in computer science for seven consecutive years from 2020 through 2026.<sup class="reference"><a href="#ref-6">[6]</a></sup><sup class="reference"><a href="#ref-18">[18]</a></sup><sup class="reference"><a href="#ref-8">[8]</a></sup><sup class="reference"><a href="#ref-19">[19]</a></sup> The designation identifies researchers who have produced multiple papers ranking in the top one percent by citations for their field and publication year in the Web of Science.<sup class="reference"><a href="#ref-18">[18]</a></sup> HKUST also reports that he has received more than a dozen best-paper awards from IEEE and ACM venues.<sup class="reference"><a href="#ref-8">[8]</a></sup></p>
+        <p>The IEEE Computer Society gave Guo its 2024 Edward J. McCluskey Technical Achievement Award for pioneering contributions to edge computing and edge intelligence technologies.<sup class="reference"><a href="#ref-2">[2]</a></sup> He directed the Edge Intelligence Lab at Hong Kong Polytechnic University from 2016 to 2023 and later became director of HKUST's Center of Physical AI and Physical Edge Intelligence Lab, as well as program director of its MSc in Artificial Intelligence.<sup class="reference"><a href="#ref-6">[6]</a></sup><sup class="reference"><a href="#ref-9">[9]</a></sup></p>
+        <p>In 2019, the IEEE Computer Society appointed Guo the inaugural editor-in-chief of the <i>IEEE Open Journal of the Computer Society</i>, beginning with the journal's launch in 2020.<sup class="reference"><a href="#ref-10">[10]</a></sup> He later became editor-in-chief of <i>IEEE Transactions on Cloud Computing</i>.<sup class="reference"><a href="#ref-11">[11]</a></sup></p>
+        <p>His professional recognition includes election as an IEEE Fellow, a Fellow of the Canadian Academy of Engineering, a member of Academia Europaea, and an elected Fellow of the Royal Society of Canada.<sup class="reference"><a href="#ref-14">[14]</a></sup><sup class="reference"><a href="#ref-13">[13]</a></sup><sup class="reference"><a href="#ref-7">[7]</a></sup><sup class="reference"><a href="#ref-3">[3]</a></sup></p>
+      </section>
+
+      <section id="grants">
+        <h2>Grants</h2>
+        <p>Guo's curriculum vitae lists 74 funded projects from 2006 through 2029, covering edge AI and foundation models, distributed and cloud computing, 6G, blockchain, smart cities, digital twins, healthcare, and disaster-resilient systems.<sup class="reference"><a href="#ref-6">[6]</a></sup> The aggregate project budgets stated in the CV are shown below. These figures combine projects on which he served as principal investigator, project coordinator, co-principal investigator, co-investigator, or coordinator; they are project-level award amounts and do not represent his personal share of the funding.</p>
+        <table class="data-table">
+          <thead><tr><th>Currency</th><th>Projects</th><th>Aggregate listed budgets</th></tr></thead>
+          <tbody>
+            <tr><td>Hong Kong dollars (HKD)</td><td>47</td><td>HK$197,938,665</td></tr>
+            <tr><td>Chinese yuan (CNY/RMB)</td><td>10</td><td>CN¥117,440,000</td></tr>
+            <tr><td>Japanese yen (JPY)</td><td>14</td><td>JP¥252,000,000</td></tr>
+            <tr><td>Norwegian kroner (NOK)</td><td>2</td><td>NOK 11,400,000</td></tr>
+            <tr><td>Canadian dollars (CAD)</td><td>1</td><td>CA$2,000</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="professional-service">
+        <h2>Professional service</h2>
+        <h3>Societies and editorial service</h3>
+        <p>Guo's professional-society service has included membership of the IEEE Communications Society Board of Governors, director of its membership services, chair of its Technical Committee on Satellite and Space Communications, membership of IEEE Fellow evaluation committees, and leadership roles in CCF Hong Kong and the Global Academy of Overseas Chinese Scholars.<sup class="reference"><a href="#ref-6">[6]</a></sup> His CV lists 14 journal editorships or editorial-board appointments. These include editor-in-chief of <i>IEEE Transactions on Cloud Computing</i>, <i>Edge Intelligence and Systems</i>, <i>Journal of Intelligent Computing and Networking</i>, and the <i>IEEE Open Journal of the Computer Society</i>, as well as editorial roles for <i>ACM Computing Surveys</i>, <i>IEEE Transactions on Computers</i>, <i>IEEE Transactions on Parallel and Distributed Systems</i>, <i>IEEE Internet of Things Journal</i>, and <i>IEEE Network</i>.<sup class="reference"><a href="#ref-6">[6]</a></sup><sup class="reference"><a href="#ref-10">[10]</a></sup><sup class="reference"><a href="#ref-11">[11]</a></sup></p>
+
+        <h3>Review panels</h3>
+        <p>His CV records 13 review-panel or funding-review appointments. They include two terms on engineering panels of the Hong Kong Research Grants Council; the selection committee of the Asian Young Scientist Fellowship; the academic committee of the Hong Kong Scholars Program; and reviewing for Singapore's Ministry of Education Academic Research Fund, Canada's Natural Sciences and Engineering Research Council, the National Natural Science Foundation of China, China's national science and technology expert system, Belgium's FNRS, the Dutch Research Council, Luxembourg's National Research Fund, Poland's National Science Centre, and the Wellcome Trust.<sup class="reference"><a href="#ref-6">[6]</a></sup></p>
+
+        <h3>Conference organization and program committees</h3>
+        <p>The CV lists 73 major conference-organization appointments between 2008 and 2026, including general, program, track, symposium, and workshop chair roles. Selected appointments include general chair of WASA 2026, ChinaCom and IEEE BDCloud in 2024, IEEE VTC 2023-Fall, IEEE CLOUD 2020, IEEE IC2E 2019, and IEEE CyberSciTech 2017; track chair of ICDCS 2026; TPC co-chair of ICNC 2026 and IEEE VTC 2024-Fall; and workshop chair for IEEE INFOCOM in 2018 and 2019.<sup class="reference"><a href="#ref-6">[6]</a></sup></p>
+        <p>His CV separately lists 103 memberships in technical program committees from 2007 through 2026. They include repeated service for NeurIPS, ICLR, ICML, CVPR, ECCV, AAAI, IJCAI, IEEE INFOCOM, IEEE ICDCS, IEEE ICC, IEEE GLOBECOM, IEEE WCNC, and IEEE PerCom.<sup class="reference"><a href="#ref-6">[6]</a></sup></p>
+      </section>
+
+      <section id="honors">
+        <h2>Honors and awards</h2>
+        <p>The following 30 honors and awards are listed in Guo's supplied curriculum vitae; entries are arranged by their most recent stated year.<sup class="reference"><a href="#ref-6">[6]</a></sup></p>
+        <ul class="award-list compact">
+          <li>Elected Fellow of the Royal Society of Canada, Academy of Science (2026)<sup class="reference"><a href="#ref-3">[3]</a></sup><sup class="reference"><a href="#ref-4">[4]</a></sup></li>
+          <li>CCF Award for Overseas Outstanding Contributions (<span lang="zh-Hant">CCF海外科技人物獎</span>) (2026)<sup class="reference"><a href="#ref-5">[5]</a></sup><sup class="reference"><a href="#ref-12">[12]</a></sup></li>
+          <li>NAAI Distinguished Artificial Intelligence Scholar Award (2026)</li>
+          <li>Clarivate Highly Cited Researcher (2020–2026)<sup class="reference"><a href="#ref-6">[6]</a></sup><sup class="reference"><a href="#ref-18">[18]</a></sup><sup class="reference"><a href="#ref-8">[8]</a></sup><sup class="reference"><a href="#ref-19">[19]</a></sup></li>
+          <li>Member of the National Academy of Artificial Intelligence (2025)</li>
+          <li>Golden Core Member Recognition, IEEE Computer Society (2025)</li>
+          <li>Listed in the Stanford/Elsevier citation dataset of the world's top 2% scientists (2020–2025)</li>
+          <li>Fellow of the World Digital Technology Academy and member of its Academician Council (2024)</li>
+          <li>Fellow of the International Artificial Intelligence Industry Alliance (2024)</li>
+          <li>IEEE Edward J. McCluskey Technical Achievement Award (2024)<sup class="reference"><a href="#ref-2">[2]</a></sup></li>
+          <li>First Prize in Natural Science, “Computing Systems for Edge Intelligent Services”, Shanghai Science and Technology Award (2024)</li>
+          <li>First Prize in Natural Science, “Air-Ground Cooperative Mobility Group Sensing Network”, China Electronics Society Science and Technology Award (2023)</li>
+          <li>Distinguished Member of the China Computer Federation (2023)</li>
+          <li>Faculty of Engineering Research Grant Achievement Award, Hong Kong Polytechnic University (2022 and 2023)</li>
+          <li>Member of Academia Europaea (2022)<sup class="reference"><a href="#ref-7">[7]</a></sup></li>
+          <li>Outstanding Service Award, Satellite and Space Communications Technical Committee, IEEE Communications Society (2022)</li>
+          <li>Faculty Merit Award for Outstanding Achievement in Research and Scholarly Activities, Hong Kong Polytechnic University (2020 and 2022)</li>
+          <li>Fellow of the Canadian Academy of Engineering (2021)<sup class="reference"><a href="#ref-13">[13]</a></sup></li>
+          <li>Fellow of the International Academy of Artificial Intelligence Sciences (2021)</li>
+          <li>ACM Distinguished Member (2021)</li>
+          <li>Japan Society for the Promotion of Science Fellowship (2021)</li>
+          <li>IEEE Fellow, for contributions to high-performance and resilient edge computing (2020)<sup class="reference"><a href="#ref-14">[14]</a></sup></li>
+          <li>CCF Distinguished Speaker (2020)</li>
+          <li><i>IEEE Transactions on Cloud Computing</i> Editorial Excellence and Eminence Award (2019 and 2020)</li>
+          <li>Changjiang Scholar Chair Professorship (<span lang="zh-Hant">長江學者講座教授</span>), Ministry of Education of China (2019)<sup class="reference"><a href="#ref-8">[8]</a></sup></li>
+          <li>IEEE Communications Society Distinguished Lecturer (2016–2017)</li>
+          <li>Outstanding Leadership Award, IEEE International Conference on Big Data Intelligence and Computing (2016)</li>
+          <li>Outstanding Service Award, IEEE International Conference on Embedded Software and Systems (2010 and 2012)</li>
+          <li>Outstanding Leadership Award, IEEE International Symposium on Parallel and Distributed Processing with Applications (2008)</li>
+          <li>Funai Information Technology Award, Funai Foundation for Information Technology, Japan (2007)</li>
+        </ul>
+
+        <h3>Best paper awards</h3>
+        <p>Guo's curriculum vitae lists 18 best-paper and publication recognitions.<sup class="reference"><a href="#ref-6">[6]</a></sup></p>
+        <ul class="award-list compact">
+          <li>Best Paper Award for “PEGASUS: Accelerating Large Language Model Inference with Stateful Prefix Caching”, IEEE International Conference on Joint Cloud Computing (2026)</li>
+          <li>Best Demo Award, IEEE/CIC International Conference on Communications in China (2023)</li>
+          <li>Guangdong Computer Academy Outstanding Paper Award for “Conservative Novelty Synthesizing Network for Malware Recognition in an Open-set Scenario” (2022)</li>
+          <li>2020 Best Paper Award for <i>IEEE Transactions on Computers</i>, IEEE Computer Society Publications Board, for “A Deep Reinforcement Learning Based Offloading Game in Edge Computing” (awarded 2022)</li>
+          <li>Best Track Paper Award for “An Online Pricing Strategy of EV Charging and Data Caching in Highway Service Stations”, IEEE International Conference on Mobility, Sensing and Networking (2020)</li>
+          <li>Best Paper Award Runner-Up for “SkyChain: A Deep Reinforcement Learning-Empowered Dynamic Blockchain Sharding System”, International Conference on Parallel Processing (2020)</li>
+          <li>IEEE Systems Journal Best Paper Award for “A Survey on Energy Internet: Architecture, Approach, and Emerging Technologies” (2019)</li>
+          <li>IEEE Communications Society Technical Committee on Big Data Best Conference Paper Award for “Making Big Data Open in Collaborative Edges: A Blockchain-Based Framework with Reduced Resource Requirements” (2019)</li>
+          <li>IEEE Communications Society Technical Committee on Green Communications and Computing Best Magazine Paper Award for “Green Industrial Internet of Things Architecture: An Energy-Efficient Perspective” (2018)</li>
+          <li>Best Student Paper Award for “Enhanced Passcode Recognition Based on Press Force and Time Interval”, Asian Conference on Intelligent Information and Database Systems (2018)</li>
+          <li>ACM Computing Reviews, 21st Annual Best of Computing – Notable Books and Articles in Computing of 2016, for “An Efficient Privacy-Preserving Ranked Keyword Search Method” (2017)</li>
+          <li>IEEE Systems Journal Best Paper Award for “Big Data Meet Green Challenges: Big Data toward Green Applications” (2017)</li>
+          <li>Best Paper Award for “Big Data Analytics for Price Forecasting in Smart Grids”, IEEE GLOBECOM (2016)</li>
+          <li>Best Paper Award for “Traffic Scheduling for Deep Packet Inspection in Software Defined Networks”, IEEE TrustCom (2016)</li>
+          <li>Best Paper Award for “Information Management System Used in Network Isolated Environment”, Tohoku-Section Joint Convention of Institutes of Electrical and Information Engineers (2016)</li>
+          <li>Best Paper Award for “DASN: Demand-Addressable Sensor Network for Active Information Acquisition”, ACM IMCOM (2014)</li>
+          <li>Best Paper Award for “Architecture-Based Performance Evaluation of Genetic Algorithms on Multi/Many-Core Systems”, IEEE CSE (2011)</li>
+          <li>Best Paper Award for “Lifetime Approximation Schemes Allow Multicasting with Linear Message Complexity in Wireless Sensor Networks”, IEEE HPCC (2008)</li>
+        </ul>
+
+        <h3>Innovation and competition</h3>
+        <p>The CV lists 12 innovation-exhibition and competition awards, including awards received by teams under Guo's supervision.<sup class="reference"><a href="#ref-6">[6]</a></sup></p>
+        <ul class="award-list compact">
+          <li>Gold Medal for “Exo-neuro-musculo-squelette cheville-pied mobile”, 49th International Exhibition of Inventions Geneva (2024)</li>
+          <li>Silver Medal for “Open and Decentralized End-to-End AI Computing for Foundation Model-as-a-Service”, 49th International Exhibition of Inventions Geneva (2024)</li>
+          <li>Gold Medal for “Advanced Intelligent System for Radiation-free Scoliosis and Posture Evaluation”, 48th International Exhibition of Inventions Geneva (2023)</li>
+          <li>Gold Medal for “AI Spine Correction and Rehabilitation Platform”, Asia International Innovation Invention Exhibition (2023)</li>
+          <li>Second runner-up, Huawei Cloud Developer Competition APAC Final, “Spark Infinity” (2022)</li>
+          <li>Silver Medal, 6th China “Internet+” Innovation and Entrepreneurship Competition, as supervisor (2020)</li>
+          <li>Student Innovation Grand Award, Hong Kong ICT Awards (2021)</li>
+          <li>Silver Medal for “Dr. Body: Posture Detection and Rehabilitation Tracking System”, 12th Challenge Cup National College Student Entrepreneurship Plan Competition, as supervisor (2020)</li>
+          <li>Second Prize in the semi-finals and Third Prize in the final for “Dr. Body: Non-radiative Bad Posture Detection and Management System”, 4th China Medical Device Innovation and Entrepreneurship Competition (2021)</li>
+          <li>Hong Kong Social Enterprise Competition Intellectual Property Ambassador Award (2020)</li>
+          <li>First Prize, national finals of the SJTU–Weining Health Smart Medical Challenge, for “Heal Boys: Spine Doctor Non-invasive Spine Three-dimensional Evaluation System” (2019)</li>
+          <li>First Prize, IEEE Communications Society Student Competition, as supervisor (2016)</li>
+        </ul>
+      </section>
+
+      <section id="references">
+        <h2>References</h2>
+        <ol class="references">
+          <li id="ref-1"><a href="https://cse.hkust.edu.hk/admin/people/faculty/profile/songguo">“Song Guo 郭嵩”</a>. Department of Computer Science and Engineering, Hong Kong University of Science and Technology. Retrieved 2 October 2026.</li>
+          <li id="ref-2"><a href="https://www.computer.org/volunteering/awards/technical-achievement">“Edward J. McCluskey Technical Achievement Award”</a>. IEEE Computer Society. Retrieved 2 October 2026.</li>
+          <li id="ref-3"><a href="https://rsc-src.ca/en/about/publications/2026-class-fellows-and-college-members">“The 2026 Class of Fellows and College Members”</a>. Royal Society of Canada. 9 September 2026. Retrieved 2 October 2026.</li>
+          <li id="ref-4"><a href="https://rsc-src.ca/sites/default/files/2026-09/2026%20New%20Members%20EN_1.pdf">“Royal Society of Canada: 2026 New Members”</a> (PDF). Royal Society of Canada. 2026. p. 32. Retrieved 2 October 2026.</li>
+          <li id="ref-5"><a href="https://www.icfp.net/news/1329">“2026年度「CCF海外科技人物獎」評選結果公告”</a> (in Traditional Chinese). I-CFP. Retrieved 2 October 2026.</li>
+          <li id="ref-6"><a href="https://cse.hkust.edu.hk/~songguo/CV.pdf">“Curriculum vitae: Song Guo”</a> (PDF). Hong Kong University of Science and Technology. Retrieved 2 October 2026.</li>
+          <li id="ref-7"><a href="https://www.ae-info.org/ae/User/Guo_Song">“Guo Song”</a>. Academia Europaea. Retrieved 2 October 2026.</li>
+          <li id="ref-8"><a href="https://cse.hkust.edu.hk/~songguo/index.html">“Song Guo”</a>. Department of Computer Science and Engineering, Hong Kong University of Science and Technology. Retrieved 2 October 2026.</li>
+          <li id="ref-9"><a href="https://researchportal.hkust.edu.hk/en/persons/song-guo/">“Song Guo”</a>. HKUST Research Portal. Hong Kong University of Science and Technology. Retrieved 2 October 2026.</li>
+          <li id="ref-10"><a href="https://www.computer.org/press-room/2019-news/song-guo-appointed-editor-in-chief-for-the-new-ieee-open-journal-of-the-computer-society">“Song Guo Appointed Editor in Chief for the New IEEE Open Journal of the Computer Society”</a>. IEEE Computer Society. 19 November 2019. Retrieved 2 October 2026.</li>
+          <li id="ref-11"><a href="https://www.computer.org/volunteering/boards-and-committees/publications">“Publications Board”</a>. IEEE Computer Society. Retrieved 2 October 2026.</li>
+          <li id="ref-12"><a href="https://www.ccf.org.cn/en/Awards/CCF_Awards/">“CCF Awards”</a>. China Computer Federation. Retrieved 2 October 2026.</li>
+          <li id="ref-13"><a href="https://www.cae-acg.ca/wp-content/uploads/2021/07/CAE-2021-News-release-Update-July-7.pdf">“Fifty-two new Fellows elected into the Canadian Academy of Engineering”</a> (PDF). Canadian Academy of Engineering. 14 June 2021. Retrieved 2 October 2026.</li>
+          <li id="ref-14"><a href="https://www.computer.org/press-room/2019-news/ieee-computer-society-announces-2020-fellows">“IEEE Computer Society Announces 2020 Fellows”</a>. IEEE Computer Society. 9 December 2019. Retrieved 2 October 2026.</li>
+          <li id="ref-15"><a href="https://www.computer.org/publications/tech-news/insider-membership-news/song-guo-interview">“On the Edge of Innovation: A Conversation with Song Guo Technical Achievement Award Recipient”</a>. IEEE Computer Society. 25 March 2024. Retrieved 2 October 2026.</li>
+          <li id="ref-16"><a href="https://www.hkpeilab.com/">“Pervasive Intelligence Lab”</a>. Hong Kong University of Science and Technology. Retrieved 2 October 2026.</li>
+          <li id="ref-17"><a href="https://cse.hkust.edu.hk/event/RTF2024/">“Towards Edge-Native Foundation Model-as-a-Service: A New AI Paradigm from Algorithms to Systems”</a>. Department of Computer Science and Engineering, Hong Kong University of Science and Technology. 2024. Retrieved 2 October 2026.</li>
+          <li id="ref-18"><a href="https://www.polyu.edu.hk/comp/news-and-events/news/2020/1202---highly-cited-researchers-2020/">“COMP scholars named Highly Cited Researchers 2020”</a>. Department of Computing, Hong Kong Polytechnic University. 15 December 2020. Retrieved 2 October 2026.</li>
+          <li id="ref-19"><a href="https://6g-aoe.hkust.edu.hk/newsevents-archives/?album_gallery_id_7=2&amp;type_7=gallery">“News and Events Archives”</a>. 6G@HK, Hong Kong University of Science and Technology. 15 November 2025. Retrieved 2 October 2026.</li>
+        </ol>
+      </section>
+
+      <section id="external-links">
+        <h2>External links</h2>
+        <ul class="external-links">
+          <li><a href="https://cse.hkust.edu.hk/admin/people/faculty/profile/songguo">HKUST faculty profile</a></li>
+          <li><a href="https://scholar.google.com/citations?user=Ib-sizwAAAAJ&amp;hl=en">Google Scholar profile</a></li>
+          <li><a href="https://www.hkpeilab.com/">Pervasive Intelligence Lab</a></li>
+          <li><a href="https://orcid.org/0000-0001-9831-2202">ORCID 0000-0001-9831-2202</a></li>
+        </ul>
+      </section>
+
+      <div class="categories"><b>Categories:</b> <a href="https://en.wikipedia.org/wiki/Category:Living_people">Living people</a><a href="https://en.wikipedia.org/wiki/Category:Canadian_computer_scientists">Canadian computer scientists</a><a href="https://en.wikipedia.org/wiki/Category:Fellows_of_the_IEEE">Fellows of the IEEE</a><a href="https://en.wikipedia.org/wiki/Category:Fellows_of_the_Canadian_Academy_of_Engineering">Fellows of the Canadian Academy of Engineering</a><a href="https://en.wikipedia.org/wiki/Category:Members_of_Academia_Europaea">Members of Academia Europaea</a></div>
+
+      <footer class="footer">This is an independent visual mock-up prepared from draft wikitext. It is not a Wikipedia page and has not been submitted to or published on Wikipedia.</footer>
+    </main>
+  </div>
+</body>
+</html>
